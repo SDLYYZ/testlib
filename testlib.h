@@ -2544,6 +2544,18 @@ NORETURN void InStream::quit(TResult result, const char* msg)
     quitscr(LightGray, msg);
     std::fprintf(stderr, "\n");
 
+#ifdef ONLINE_JUDGE
+    if (result != _points)
+        std::fprintf(stdout, "%d\n", result == _ok ? 100 : (result >= _partially ? pctype : 0));
+    else
+    {
+        if (__testlib_points == std::numeric_limits<float>::infinity())
+            quit(_fail, "Expected points, but infinity found");
+        std::string stringPoints = removeDoubleTrailingZeroes(format("%.10f", __testlib_points));
+        std::fprintf(stdout, "%s\n", stringPoints.c_str());
+    }
+#endif
+
     inf.close();
     ouf.close();
     ans.close();
@@ -4043,7 +4055,7 @@ void registerTestlibCmd(int argc, char* argv[])
 
     testlibMode = _checker;
     __testlib_set_binary(stdin);
-
+#ifndef ONLINE_JUDGE
     if (argc > 1 && !strcmp("--help", argv[1]))
         __testlib_help();
 
@@ -4083,6 +4095,11 @@ void registerTestlibCmd(int argc, char* argv[])
     inf.init(argv[1], _input);
     ouf.init(argv[2], _output);
     ans.init(argv[3], _answer);
+#else
+    inf.init("input", _input);
+    ouf.init("user_out", _output);
+    ans.init("answer", _answer);
+#endif
 }
 
 void registerTestlib(int argc, ...)
